@@ -102,3 +102,12 @@ for key, val := range fruits {
     fmt.Printf("%s : %d\n" , key, val)
 }
 ```
+
+---
+
+## 함수
+
+인자값들을 넘겨줄때는 값을 넘겨줄 수도 있고 (Pass by Value), 주소를 넘겨줄수도 있다 (Pass by Reference)
+
+값을 넘겨줄때는 그값이 복사되며, 주소를 넘겨줄 때는 값이 복사되지 않고 원래의 값이 바뀔 수도 있다
+
