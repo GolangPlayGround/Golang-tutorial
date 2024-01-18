@@ -1,7 +1,7 @@
 package main
 
 import (
-	"boo/src/string_util"
+	"example.com/m/src/string_util"
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"strings"

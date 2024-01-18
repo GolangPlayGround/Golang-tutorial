@@ -3,3 +3,4 @@
 .DS_Store
 *.xml
 *.sum
+go.mod
