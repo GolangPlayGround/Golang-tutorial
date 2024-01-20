@@ -169,3 +169,37 @@ func variadicExample(s string, i ...int) {
     fmt.Printf("%s\n%#v\n", s, i)
 }
 ```
+
+---
+
+## 구조체
+
+```go
+type rectangle struct {
+    length float64
+    breadth float64
+    color string
+}
+
+func main() {
+    spew.Dump(rectangle{10.5, 12.5 , "red"})
+}
+```
+
+`메소드 리시버`
+
+```go
+type rectangle struct {
+    length float64
+    breadth float64
+    color string
+}
+
+func (r rectangle) area() float64 {
+    return r.length * r.breadth
+}
+
+func (r recatngle) perimeter() float64 {
+    return 2 * (r.length + r.breadth)
+}
+```
