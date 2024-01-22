@@ -134,3 +134,116 @@ func main() {
 - os.Remove(name string) error : 파일을 지웁니다
 - os.Chmod(name string, mode FileMode) error : 특정 파일의 퍼미션을 변경
 
+
+--- 
+
+## 다양한 파일 읽고 쓰기
+
+
+`json 읽고 쓰기`
+```json
+// test.json
+{
+  "employees": [
+    {
+      "name": "Kim",
+      "email": "kim@email.com"
+    },
+    {
+      "name": "Jun",
+      "email": "jun@email.com"
+    },
+    {
+      "name": "seong",
+      "email" : "seong@email.com"
+    }
+  ]
+}
+```
+
+위 json 데이터 구조를 표현하기 위해 2가지 구조체를 만들자
+
+```Go
+type Employees struct {
+    Employees []Employee `json:"employees"`
+}
+type Employee struct {
+    Name string `json:"name"`
+    Email string `json:"email"`
+}
+
+func main() {
+    data1 , err := os.Readfile("test.json")
+    if err != nil {
+        panic(err)
+    }
+    emp := EMployees{}
+    err = json.Unmarshal(data1, &emp)
+    if err != nil {
+        panic(err)
+    }
+    spew.Dump(emp)
+    data2, err := json.MarshalIndent(emp, "","   ")
+    if err != nil {
+        panic(err)
+    }
+    err = os.WriteFile("test2.json",data2, 0644)
+    if err != nil {
+        panic(err)
+    }
+
+}
+```
+
+`Text 읽기/쓰기`
+
+```go
+func main() {
+    // rfp, wfp 파일 여는 부분 생략
+    rsc := bufio.NewScanner(rfp)
+    rsc.Split(bufio.ScanLines)
+    wsc := bufio.NewWriter(wfp)
+    for rsc.Scan() {
+        line := rsc.Text()
+        fmt.Println(line)
+        if _, err := wsc.WriteString(line + "\n"); err != nil {
+            panic(err)
+        }
+        _ = wsc.Flush()
+    }
+}
+```
+
+`CSV 읽기/쓰기`
+
+```csv
+Class,Korean,English,Mathematics
+Kim,90,80,60
+Lee,100,90,90
+Park,80,90,70
+Jung,40,30,80
+```
+
+```go
+func main() {
+    // rfp, wfp 파일 여는 부분 생략
+    reader := csv.NewReader(bufio.NewReader(rfp))
+    writer := csv.NewWriter(bufio.NewWriter(wfp))
+
+    for {
+        row, err := reader.Read()
+        if err == io.EOF {
+            break
+        }
+        if err != nil {
+            panic(err)
+        }
+
+        err = writer.Write(row)
+        if err != nil {
+            panic(err)
+        }
+        writer.Flush()
+    }
+}
+```
