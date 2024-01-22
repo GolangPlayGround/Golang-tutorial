@@ -404,3 +404,100 @@ fun main() {
     spew.Dump(vary)
 }
 ```
+
+----
+
+## 고루틴과 채널
+
+`고루틴`이란 동시에 함수가 실행될 수 있도록 도와주는 쉽고 유용한 방법
+
+```go
+func sum(start, end int) {
+    s:= 0
+    for i:= start; i<=end; i++ {
+        s+=i
+    }
+    fmt.Printf("sum(%d ~ %d) = %d\n", start, end,s)
+}
+
+func main() {
+    startTime := time.Now().UnixMilli()
+    go sum(1234567, 345134131)
+    go sum(12, 34)
+    go sum(444, 555)
+    time.Sleep(2 * time.Second)
+    fmt.Printf("elapsed Time : %dms", time.Now.UnixMilli() - startTime)
+}
+```
+
+go 키워드를 붙이면 편리하게도, go언어에서 설꼐한 경량 쓰레드에서 처리를 해준다. 위의 코드는 2초를 기다린다
+
+그러나 이것은 컴퓨터에 따라 더 기다려야할수도 있다. 이래서 내장 패키지의 sync에는 WaitGroup구조체와 메서드들이있다
+
+```go
+var wg sync.WaitGroup // waitgroup 선언
+func sum(){
+    defer wg.Done() // 하나의 작업이 끝날때마다 호출
+    //나머지 코드
+}
+
+func main() {
+    startTime := time.Now().UnixMilli()
+    wg.add(3) // 3개의 작업을 처리
+    go sum(1234567, 345134131)
+    go sum(12, 34)
+    go sum(444, 555)
+    wg.wait() // 모든 작업이 끝나길 기다림
+    fmt.Printf("elapsed Time : %dms", time.Now.UnixMilli() - startTime)
+}
+```
+
+`atomic` 고루틴들에서 변수에 접근할 때는 서로가 서로를 변경하거나 읽을 수 있어 주의가 필요하다. 원래는 Lock을 걸고 읽거나
+
+변경하고 unlock해야 하지만 atomic을 사용하면 편하게 작업을 할 수있다
+
+```go
+func sum (start, end int, sum *uint64, wg *sync.WaitGroup) {
+    defer wg.Done()
+    t := 0
+    for i:= start; i <= end; i++ {
+        t += i
+    }
+    atomic.AddUnit64(sum, uint64(t)) // sum에 t만큼 더하기를 함
+}
+```
+
+
+### `채널`이란 go언어에서 쓰레드끼리 통신하기 위해 만들어놓은기능
+
+```go
+func main() {
+    finished := make(chan bool) // 채널 생성
+    go func() {
+        fmt.Println("Hello World")
+        finished <- true // 채널에 데이터를 보냄
+    }()
+    <- finished // 채널에서 데이털르 받을 때까지 block됨
+    fmt.Println("Program Ended")
+}
+```
+
+### `buffered 채널`은 버퍼 수만큼의 여유가 있어, 채널이 다 찰때까지 block이 걸리지 않음
+
+```go
+func main() {
+    n := 10
+    c := make(chan int, n) // 10개의 buffered 채널 생성
+    go func() {
+        x, y := 0,1
+        for i:= 0; i < n; i++ {
+            c <- x // 채널에 피보나치 수열 값을 보냄
+            x,y = y, x + y
+        }
+        close(c) // 연산 끝난 후 채널을 닫음
+    }()
+    for i:= range c { // 10개의 채널에서 하나씩 꺼내 옴
+        fmt.Println(i)
+    }
+}
+```
