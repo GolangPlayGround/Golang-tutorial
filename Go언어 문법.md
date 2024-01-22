@@ -203,3 +203,111 @@ func (r recatngle) perimeter() float64 {
     return 2 * (r.length + r.breadth)
 }
 ```
+
+---
+
+## 익명함수와 클로저 그리고 defer
+
+`익명함수` 함수 이름 없이 선언된함수.
+
+다른곳에서 재사용하지 않는다면 이론식으로 정의해서 사용해도 무방
+
+```go
+func main() {
+    var area = func(l int, b int) int {
+        return l * b
+    }
+    spew.Dump(area(20,30))
+
+// 재사용이 필요 없다면 이렇게도 가능
+    func(l int, b int){
+        spew.Dump(l * b)
+    }(20, 20)
+
+}
+```
+
+익명함수는 보통 다른함수의 인자로 넘겨주거나 다른 함수의 리턴값으로 사용된다.
+
+go 언어의 sort함수 정의는 아래와같다
+
+```go
+func Slice(x any, less func(i,j int) bool)
+
+func main() {
+    people := []struct {
+        Name string
+        Age int
+    } {
+        {"kim", 27},
+        {"lee", 43},
+        {"jung", 36},
+    }
+    sort.Slice(people , func(i, j int) bool {return people[i].Name < people[j].Name})
+}
+```
+
+`클로저`란 익명함수의 특별한 경우로, 함수 외부의 변수에 액세스함
+
+```go
+func main(){
+    for i:= 10.0; i< 100.0; i += 10.0 {
+        cv := func() float64 {
+            return i * 39.370
+        }
+        fmt.Printf("%.0f미터 => %6.1f인치", i, cv())
+    }
+}
+```
+
+### `defer`란 함수가 종료될 때까지 실행을 미루는 기능
+
+```go
+func main() {
+    var fn = func(i int) {
+        fmt.Println(i)
+    }
+    defer fn(3)
+    defer fn(2)
+    fn(1)
+}
+```
+
+`defer`를 사용안할때
+
+```go
+func readWrite() bool {
+    file.Open("file")
+    if failure1 {
+        file.Close()
+        return false
+    }
+    if failure2 {
+        file.Close()
+        return false
+    }
+    // read and write
+    file.Close()
+    return true
+}
+```
+
+`defer`를 사용할 때
+
+```go
+func readWrite() bool {
+    file.Open("file")
+    defer file.Close()
+    if failure1 {
+        return false
+    }
+    if failure2 {
+        return false
+    }
+    // read and write
+    return true
+}
+
+defer를 사용하였을 때의 장점은 잊지않고 close 함수류를 사용할 수 있다는점.
+```
+
