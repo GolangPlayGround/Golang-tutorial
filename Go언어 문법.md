@@ -311,3 +311,96 @@ func readWrite() bool {
 defer를 사용하였을 때의 장점은 잊지않고 close 함수류를 사용할 수 있다는점.
 ```
 
+----
+
+## 인터페이스
+
+
+go언어에서는 extends나 implements가 없으며 만약 구조체를 employee 인터페이스로써 사용하려면 모든 메서드
+
+(PrintName과 PrintAddress)를 리시버로 구현해야한다
+
+```go
+type Employee interface {
+    PrintName() string
+    PrintAddress() [3]string
+}
+```
+
+하나의 사용자 정의 타입은 여러 개의 인터페이스를 구현할 수 있따
+
+```go
+type Polygons interface{
+    Perimeter() float64
+}
+type Object interface {
+    NumberOfSide() int
+}
+
+type Square float64
+
+func (s Square) Perimeter() float64 {
+    return float64(s * 4.0)
+}
+
+func (s Square) NumberOfSide() int {
+    return 4
+}
+
+// go 언어에서는 Tpye Assertion을 하고 만족할 경우 사용할 수 있다
+
+func main() {
+    var s Polygons = Square(4.5)
+    fmt.Println(s.Perimeter())
+    var t = s.(object)
+    fmt.Println(t.NumberOfSide())
+}
+```
+
+`Pointer Receiver` 는 주소를 가리키므로 원래의 값을 변경할 수 있다.
+
+`Value Reciver`는 원래의 값을 바꿀 수 없다. 또한 필드 이름이 소문자라면 private이므로 다른 패키지에서 접근할 수 없어 초기화 불가
+
+```go
+type Printer interface {
+    Print()
+}
+
+type Emp struct {
+    name, address string
+}
+
+func (e *Emp) Print() {
+    fmt.Printf("Name: %s\n Address: %s\n", e.name, e.address)
+}
+
+func (e *Emp) Assign(n, a string) {
+    e.name = n
+    e.address = a
+}
+
+
+func main() {
+    var e Emp
+    e.Assign("John Doe", "very long address string")
+    var p Printer
+    p = &e
+    p.Print()
+}
+```
+
+### `빈 인터페이스(interface{})`는 모든 유형의 데이터를 담을 수 있다
+
+```go
+fun main() {
+    var vary interface{}
+    vary = 123
+    spew.Dump(vary)
+    vary = "good morning"
+    spew.Dump(vary)
+    vary = map[string]int{"Mark":10, "Jane": 20}
+    spew.Dump(vary)
+    vary = [3]string{"Korea", "Japan", "China"}
+    spew.Dump(vary)
+}
+```
