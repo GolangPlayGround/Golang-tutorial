@@ -50,3 +50,87 @@ type Stringer interface {
     String() string
 }
 ```
+
+---
+
+## 파일과 디렉토리
+
+빈 파일을 생성 후 파일에 내용 채워넣기
+
+```go
+func main() {
+    const filename = "test.txt"
+    fp, err := os.Crearte(filename)
+    if err!= nul {
+        log.Panic().Err(err).Msg("파일 생성 실패")
+    }
+    defer fp.Close()
+    _, err = fmt.Fprintf(fp, "Hello World\n")
+    if err != nil {
+        log.Panic().Err(err).Msg("파일 기록 실패")    
+    }
+    contents, err := os.ReadFile(filename)
+    if err != nil {
+        log.Panic().Err(err).Msg("파일 내용 읽어오기 실패")
+    }
+    spew.Dump(contents)
+}
+```
+
+os.Create는 여러 번 실행시켜도 파일 내용을 계속 덮어쓰기 때문에, 파일 내용을 append하는 법을 보자
+
+```go
+func main() {
+    const filename = "test.txt"
+    fp, err := os.OpenFile(filename, os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
+    // 이하 생략
+}
+```
+
+파일을 다루려면 알아야하는게 있는데 파일 플래그를 보자
+
+- O_RDONLY: read only
+- O_WRONLY: writ eonly
+- O_RDWR : read and write
+- O_CREATE : 파일이 없다면 새로 생성
+- O_EXCL : O_CREATE와 사용시 파일은 없어야 함
+- O_TRUNC: 쓰기 가능한 모드로 파일이 열리면 파일의 내용을 전부 지워버림
+- O_APPEND: 쓰기 할 때 파일의 내용을 추가 가능 하게 함. 즉 전부 지우지 않음
+
+0644는 무슨의미냐면 0으로 시작했기에 8진수 즉 8진수 644란 의미. 각 자리마다 owner,group,others의 뜻을 가지고 있다
+- owner : 파일의 소유자. 보통은 파일을 최초 생성한 사람
+- group : 리눅스 시스템에서는 계정과 별도로 group으로 계정 그룹을 관리. 계정 그룹이 같은 사람들 의미
+- other : 소유자도 아닌 같은 그룹도 아닌 사람들
+
+각 자리마다 rwx를 2진수로 표시. r은 read w은 write x는 executable
+
+101이면 read & executable이고 8진수로 표현하면 5. 111이면 read & write &executable이고 8진수로 표현시 7
+
+일반적으로 디렉토리 만들 때는 0755, 일반 파일을 만들 때는 0644로 만드는 편
+
+
+파일 이름을 변경하려면 os.Rename을 사용하면 됨
+
+```go
+func main() {
+    oldName := "test.txt"
+    newName := "testing.txt"
+    if err := os.Rename(oldName, newName); err != nul {
+        // 이하 생략
+    }
+}
+```
+
+`파일과 디렉토리`
+
+- os.Create(name string) (*File,error) : name이름의 파일이 존재하지 않으면 생성
+- os.Open(name string) (*file, error) : name의 이름을 읽기 전용 모드로 연다
+- os.OpenFile(name string, flag int, perm FileMode) (*file, error) : 지정된 flag와 퍼미션으로 파일 열음
+- os.Stat(name string) (*FileInfo, error) : 파일의 정보를 가져오거나, 파일이 존재하는지 체크하는데 사용
+- os.Rename(oldpath, newpath string) error : oldpath에서 newpath로 이름을 변경
+- os.Mkdir(name string, perm FileMode) error, os.Modkir(name string, perm FileMode) error : 둘다 디렉토리 
+  
+    만들지만 MkdirAll은 서브 티렉토리가 없으면 서브디렉토리도 만들음
+- os.Remove(name string) error : 파일을 지웁니다
+- os.Chmod(name string, mode FileMode) error : 특정 파일의 퍼미션을 변경
+
