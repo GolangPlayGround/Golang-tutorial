@@ -247,3 +247,111 @@ func main() {
     }
 }
 ```
+
+
+---
+
+## sql 쿼리
+
+```sql
+create table users (
+    id int not null AUTO_INCREMENT,
+    name varchar(50) not null,
+    email varchar(100) not null,
+    password varchar(100) not null,
+    primary key(id)
+)
+```
+
+```go
+import (
+    "github.com/go-sql-driver/mysql"
+)
+
+func main() {
+    db, err := sql.Open("mysql", "go1:goldMa$k46@tcp(127.0.0.1:3306)/go1")
+    if err != nil {
+        panic(err)
+    }
+
+    defer db.Close()
+
+    var name, email string
+    row := db.QueryRow("SELECT name, email FROM users WHERE id = ?",1)
+    err = row.Scan(&name, &email)
+    if err != nil {
+        panic(err)
+    }
+    fmt.Printf("name:%q, email:%q\n", name, email)
+}
+```
+
+이번엔 복수개의 row znjfl
+
+```go
+func main() {
+    // db 커넥션 부문 생략
+    var id int
+    var name string
+    rows, err := db.Query("select id, name from users where id < ?", 10)
+    if err != nil {
+        panic(err)
+    }
+    defer rows.Close()
+    for rows.Next() {
+        _ = rows.Scan(&id, &name)
+        fmt.Println(id, name)
+    }
+}
+```
+
+db.Exec의 결과를 result에 저장하는데 result.LastInsertId() 함수를 통해 마지막으로 insert한 id를 알아낼 수 있다
+
+result.RowsAffected() 함수를 통해 몇개의 row에 영향을 미쳤는지 알 수 있고 update, delete도 비슷한 방식으로 작성할 수 있다
+
+```go
+func main() {
+    //db 커넥션 부문 생략
+    result, err := db.Exec(
+        "insert into users values (?, ?, ?, ?)",
+        3,
+        "jane doe"
+        "jane@email.address",
+        "131231154124121313413",
+    )
+    if err != nil {
+        panic(err)
+    }
+
+    n, err := result.LastInsertId()
+    if err != nil {
+        panic(err)
+    }
+    fmt.Printf("last-insert-id: %d\n" , n)
+}
+```
+
+### `XORM`
+
+ORM툴인 xorm이 있다. 홈페이지 주소는 https://xorm.io
+
+xorm은 구조체를 통하여 쿼리를 진행한다. users에 해당하는 구조체를 선언하자
+
+```go
+type User struct {
+    Id int
+    Name,Email,Password string
+}
+```
+
+xorm을 사용하여 직관적으로 간단하게 select와 insert를 할 수 있다
+
+```go
+func main() {
+    db, err := xorm.NewEngine("mysql", "go1:goldMa$k456@tcp(127.0.0.1:3306)/go1")
+    if err != nil {
+        panic(err)
+    }
+    defer db.Close()
+}
+```
