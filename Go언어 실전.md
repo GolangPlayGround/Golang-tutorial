@@ -353,5 +353,22 @@ func main() {
         panic(err)
     }
     defer db.Close()
+
+    var users []User
+    err = db.Table("users").Where("id > ?", 10).Find(&users)
+    if err != nil {
+        panic(err)
+    }
+
+    fmt.Println(users)
+    newUser := user{
+        Name : "saechimdaeki"
+        Email : "saechim@saechim.com",
+        Password: "13141241212141",
+    }
+    _, err := db.Table("users").Insert(&newuser)
+    if err!= nil {
+
+    }
 }
 ```
